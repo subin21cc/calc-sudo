@@ -5,7 +5,7 @@ let redis;
 try {
   redis = Redis.fromEnv();
 } catch (e) {
-  console.error('Redis 초기화 실패:', e);
+  console.error('Redis 초기화 실패: UPSTASH_REDIS_REST_URL 또는 UPSTASH_REDIS_REST_TOKEN 환경 변수가 설정되지 않았습니다.', e);
 }
 
 const OPERATORS = {
