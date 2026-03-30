@@ -24,14 +24,19 @@ const OP_SYMBOLS = { add: '+', sub: '-', mul: '×', div: '÷' };
 
 export default async function handler(req, res) {
   try {
-    const { a, b, op = 'add' } = req.query;
+    const url = new URL(req.url, 'http://localhost');
+    const a = url.searchParams.get('a');
+    const b = url.searchParams.get('b');
+    const op = url.searchParams.get('op') || 'add';
 
     if (!OPERATORS[op]) {
       return res.status(400).json({ error: '잘못된 연산자입니다.' });
     }
 
-    const numA = Number(a);
-    const numB = Number(b);
+    // searchParams.get()은 값이 없으면 null을 반환합니다.
+    // Number(null)은 0이 되므로, 명시적인 isNaN 체크를 위해 undefined처럼 처리하거나 별도 체크합니다.
+    const numA = (a === null || a === '') ? NaN : Number(a);
+    const numB = (b === null || b === '') ? NaN : Number(b);
 
     if (isNaN(numA) || isNaN(numB)) {
       return res.status(400).json({ error: '유효한 숫자를 입력해 주세요.' });
