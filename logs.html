@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>계산 로그 | 과제</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0070f3;
+            --bg-color: #fafafa;
+            --text-color: #333;
+            --border-color: #eaeaea;
+            --font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .back-link {
+            font-size: 14px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .log-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-expression {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .log-result {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .log-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 15px;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>계산 로그</h2>
+            <a href="/" class="back-link">&larr; 계산기로 돌아가기</a>
+        </div>
+
+        <div class="log-card" id="logContainer">
+            <div class="loading-state">로그를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadLogs() {
+            const container = document.getElementById('logContainer');
+
+            try {
+                const response = await fetch('/api/log');
+                const logs = await response.json();
+
+                if (!logs || logs.length === 0) {
+                    container.innerHTML = '<div class="empty-state">아직 계산 기록이 없습니다.</div>';
+                    return;
+                }
+
+                container.innerHTML = logs.map(log => {
+                    const entry = typeof log === 'string' ? JSON.parse(log) : log;
+                    const op = entry.op || '+';
+                    const time = new Date(entry.time).toLocaleString('ko-KR');
+                    return `
+                        <div class="log-item">
+                            <div>
+                                <div class="log-expression">${entry.a} ${op} ${entry.b}</div>
+                                <div class="log-time">${time}</div>
+                            </div>
+                            <div class="log-result">= ${entry.result}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error:', error);
+                container.innerHTML = '<div class="empty-state">로그를 불러오지 못했습니다.</div>';
+            }
+        }
+
+        loadLogs();
+    </script>
+</body>
+</html>

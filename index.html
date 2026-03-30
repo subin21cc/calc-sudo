@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FE+BE 연동 계산기 | 과제</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0070f3;
+            --bg-color: #fafafa;
+            --text-color: #333;
+            --border-color: #eaeaea;
+            --font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .calculator-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .badge-container {
+            margin-top: -10px;
+            margin-bottom: 40px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 50px;
+            background-color: var(--border-color);
+            color: #666;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+
+        .badge svg {
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+
+        .input-group {
+            position: relative;
+            flex: 1;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: var(--font-family);
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0,112,243,0.1);
+        }
+
+        .operator-select {
+            width: 64px;
+            padding: 16px 8px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            font-family: var(--font-family);
+            text-align: center;
+            background: #fff;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .operator-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0,112,243,0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #0060d9;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button.loading {
+            background-color: #a0cfff;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--primary-color);
+        }
+
+        .log-link {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .log-link:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <h2>[과제] Vercel FE+BE 배포</h2>
+
+        <div class="badge-container">
+            <span class="badge">
+                <svg viewBox="0 0 115 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M57.5 0L115 100H0L57.5 0Z" fill="black"/></svg>
+                Deployed on Vercel
+            </span>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <input id="num1" type="number" placeholder="첫 번째 숫자" required>
+            </div>
+            <select id="operator" class="operator-select">
+                <option value="add">+</option>
+                <option value="sub">&minus;</option>
+                <option value="mul">&times;</option>
+                <option value="div">&divide;</option>
+            </select>
+            <div class="input-group">
+                <input id="num2" type="number" placeholder="두 번째 숫자" required>
+            </div>
+        </div>
+
+        <button id="calcBtn" onclick="doCalc()">서버로 계산 요청하기</button>
+
+        <div class="result-container">
+            <div class="result-label">API 계산 결과</div>
+            <div id="display" class="result-value">0</div>
+        </div>
+
+        <a href="/logs" class="log-link">계산 로그 보기 &rarr;</a>
+    </div>
+
+    <script>
+        async function doCalc() {
+            const n1 = document.getElementById('num1').value;
+            const n2 = document.getElementById('num2').value;
+            const op = document.getElementById('operator').value;
+            const btn = document.getElementById('calcBtn');
+            const displayElement = document.getElementById('display');
+
+            if (!n1 || !n2) {
+                alert('두 숫자를 모두 입력해 주세요.');
+                return;
+            }
+
+            btn.classList.add('loading');
+            btn.innerText = '계산 중...';
+            displayElement.style.opacity = '0.5';
+            displayElement.style.color = 'var(--primary-color)';
+
+            try {
+                const response = await fetch(`/api/calc?a=${n1}&b=${n2}&op=${op}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    displayElement.innerText = data.error;
+                    displayElement.style.color = 'red';
+                } else {
+                    displayElement.innerText = data.result;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                displayElement.innerText = '오류 발생';
+                displayElement.style.color = 'red';
+            } finally {
+                btn.classList.remove('loading');
+                btn.innerText = '서버로 계산 요청하기';
+                displayElement.style.opacity = '1';
+            }
+        }
+    </script>
+</body>
+</html>
