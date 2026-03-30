@@ -1,11 +1,16 @@
 import { Redis } from '@upstash/redis';
 
-// 환경 변수 오류 방지를 위해 에러 처리
-let redis;
-try {
-  redis = Redis.fromEnv();
-} catch (e) {
-  console.error('Redis 초기화 실패: UPSTASH_REDIS_REST_URL 또는 UPSTASH_REDIS_REST_TOKEN 환경 변수가 설정되지 않았습니다.', e);
+// Redis 클라이언트 초기화 (지연 초기화 및 싱글톤 패턴)
+let redisInstance = null;
+function getRedis() {
+  if (redisInstance) return redisInstance;
+  try {
+    redisInstance = Redis.fromEnv();
+    return redisInstance;
+  } catch (e) {
+    console.error('Redis 초기화 실패: UPSTASH_REDIS_REST_URL 또는 UPSTASH_REDIS_REST_TOKEN 환경 변수가 설정되지 않았거나 잘못되었습니다.', e.message);
+    return null;
+  }
 }
 
 const OPERATORS = {
@@ -39,6 +44,7 @@ export default async function handler(req, res) {
     const result = OPERATORS[op](numA, numB);
 
     // Redis 로그 저장은 실패해도 계산 결과는 반환해야 함
+    const redis = getRedis();
     if (redis) {
       try {
         await redis.lpush('logs', JSON.stringify({
@@ -48,9 +54,12 @@ export default async function handler(req, res) {
           result,
           time: new Date().toISOString(),
         }));
+        console.log('Redis 로그 저장 성공');
       } catch (err) {
-        console.error('Redis 로그 저장 실패:', err);
+        console.error('Redis 로그 저장 실패:', err.message);
       }
+    } else {
+      console.warn('Redis 클라이언트가 초기화되지 않아 로그를 저장할 수 없습니다. Vercel 환경 변수 설정을 확인하고 재배포해 주세요.');
     }
 
     res.status(200).json({ result });
